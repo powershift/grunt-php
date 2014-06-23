@@ -36,12 +36,18 @@ module.exports = function (grunt) {
 					bin: 'php'
 				}
 			}
+		},
+		debug: {
+			options: {
+				inspector: true
+			}
 		}
 	});
 
 	grunt.loadTasks('tasks');
 	grunt.loadNpmTasks('grunt-simple-mocha');
 	grunt.loadNpmTasks('grunt-contrib-watch');
+	grunt.loadNpmTasks('grunt-debug');
 
 	grunt.registerTask('phpwatch', ['php:test', 'watch']);
 	grunt.registerTask('default', ['php:test200', 'php:test301', 'simplemocha:test']);

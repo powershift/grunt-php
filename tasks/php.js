@@ -28,9 +28,10 @@ module.exports = function (grunt) {
 				checkServer(hostname, port, cb);
 			}).end();
 		}, 50);
-	}
+	};
 
 	grunt.registerMultiTask('php', 'Start a PHP-server', function () {
+		var task = this;
 		var cb = this.async();
 		var options = this.options({
 			port: 8000,
@@ -53,15 +54,16 @@ module.exports = function (grunt) {
 				return cb();
 			}
 
-			var cp = spawn(options.bin, args, {
-				cwd: options.base,
-				stdio: 'inherit'
-			});
+			var cp = startDaemon(options, args);
 
 			// quit PHP when grunt is done
-			process.on('exit', function () {
-				cp.kill();
-			});
+			process.on('exit', function (code) {
+				grunt.log.write('STRINGNDKGNF');
+				console.log(grunt);
+				throw 'balls';
+
+				task.killDaemon();
+			}, this);
 
 			// check when the server is ready. tried doing it by listening
 			// to the child process `data` event, but it's not triggered...
@@ -75,5 +77,30 @@ module.exports = function (grunt) {
 				}
 			}.bind(this));
 		}.bind(this));
+
+		var killDaemon = function() {
+			grunt.log('KILLING', task);
+			if (task.cp) {
+				task.cp.stdout.removeAllListeners('data');
+				task.cp.stderr.removeAllListeners('data');
+				task.cp.removeAllListeners('error');
+				task.cp.kill();
+				task.cp = null;
+			}
+		};
+
+		var startDaemon = function(options, args) {
+			task.cp = spawn(options.bin, args, {
+				cwd: options.base,
+				stdio: 'inherit'
+			});
+			console.log('PID', task.cp.pid);
+			return task.cp;
+		};
+
+	});
+
+	grunt.registerTask('killphp', "Kill off the php server", function() {
+		killDaemon();
 	});
 };
