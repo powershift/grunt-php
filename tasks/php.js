@@ -3,6 +3,8 @@ var spawn = require('child_process').spawn;
 var http = require('http');
 var open = require('opn');
 var binVersionCheck = require('bin-version-check');
+var fs = require('fs');
+var util = require('util');
 
 module.exports = function (grunt) {
 	var checkServerTries = 0;
@@ -56,12 +58,25 @@ module.exports = function (grunt) {
 
 			var cp = startDaemon(options, args);
 
+			fs.writeFile('.phppid', cp.pid, function(err) {
+				if(err) {
+					task.killDaemon();
+					throw err;
+				}
+
+				console.log('all good here');
+			})
+
 			// quit PHP when grunt is done
 			process.on('exit', function (code) {
-				grunt.log.write('STRINGNDKGNF');
-				console.log(grunt);
-				throw 'balls';
+				util.log('wibbles');
 
+				if (fs.exists('.phppid')) {
+					console.log('removing pid file');
+					fs.unlinkSync('.phppid');
+				} else {
+					console.log('not going out');
+				}
 				task.killDaemon();
 			}, this);
 
